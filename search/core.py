@@ -26,10 +26,10 @@ class Vector2:
 
     def __lt__(self, other: 'Vector2') -> bool:
         return (self.r, self.c) < (other.r, other.c)
-    
+
     def __hash__(self) -> int:
         return hash((self.r, self.c))
-    
+
     def __str__(self) -> str:
         return f"Vector2({self.r}, {self.c})"
 
@@ -49,19 +49,31 @@ class Vector2:
         yield self.r
         yield self.c
 
+    def down(self, n: int = 1) -> 'Vector2':
+        return self + Direction.Down * n
+
+    def up(self, n: int = 1) -> 'Vector2':
+        return self + Direction.Up * n
+
+    def left(self, n: int = 1) -> 'Vector2':
+        return self + Direction.Left * n
+
+    def right(self, n: int = 1) -> 'Vector2':
+        return self + Direction.Right * n
+
 
 class Direction(Enum):
     """
     An `enum` capturing the eight directions on the square grid-based board.
     """
-    Down      = Vector2(1, 0)
-    DownLeft  = Vector2(1, -1)
+    Down = Vector2(1, 0)
+    DownLeft = Vector2(1, -1)
     DownRight = Vector2(1, 1)
-    Up        = Vector2(-1, 0)
-    UpLeft    = Vector2(-1, -1)
-    UpRight   = Vector2(-1, 1)
-    Left      = Vector2(0, -1)
-    Right     = Vector2(0, 1)
+    Up = Vector2(-1, 0)
+    UpLeft = Vector2(-1, -1)
+    UpRight = Vector2(-1, 1)
+    Left = Vector2(0, -1)
+    Right = Vector2(0, 1)
 
     @classmethod
     def _missing_(cls, value: tuple[int, int]):
@@ -78,16 +90,16 @@ class Direction(Enum):
 
     def __str__(self) -> str:
         return {
-            Direction.Down:      "[↓]",
-            Direction.DownLeft:  "[↙]",
+            Direction.Down: "[↓]",
+            Direction.DownLeft: "[↙]",
             Direction.DownRight: "[↘]",
-            Direction.Up:        "[↑]",
-            Direction.UpLeft:    "[↖]",
-            Direction.UpRight:   "[↗]",
-            Direction.Left:      "[←]",
-            Direction.Right:     "[→]",
+            Direction.Up: "[↑]",
+            Direction.UpLeft: "[↖]",
+            Direction.UpRight: "[↗]",
+            Direction.Left: "[←]",
+            Direction.Right: "[→]",
         }[self]
-    
+
     def __iter__(self) -> Iterator[int]:
         return iter(self.value)
 
@@ -119,16 +131,16 @@ class Coord(Vector2):
 
     def __add__(self, other: 'Direction|Vector2') -> 'Coord':
         return self.__class__(
-            (self.r + other.r), 
-            (self.c + other.c),
+            (self.r + other.r) % BOARD_N,
+            (self.c + other.c) % BOARD_N,
         )
 
     def __sub__(self, other: 'Direction|Vector2') -> 'Coord':
         return self.__class__(
-            (self.r - other.r), 
-            (self.c - other.c)
+            (self.r - other.r) % BOARD_N,
+            (self.c - other.c) % BOARD_N
         )
-    
+
 
 class CellState(Enum):
     """
@@ -149,7 +161,7 @@ class CellState(Enum):
 @dataclass(frozen=True, slots=True)
 class MoveAction():
     """
-    A dataclass representing a "move action", which consists of a coordinate 
+    A dataclass representing a "move action", which consists of a coordinate
     and one or more directions (multiple directions used for multiple hops).
     """
     coord: Coord
@@ -160,7 +172,7 @@ class MoveAction():
         if isinstance(self._directions, Direction):
             return [self._directions]
         return self._directions
-    
+
     def __str__(self) -> str:
         try:
             dirs_text = ", ".join(str(d) for d in self.directions)
