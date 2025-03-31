@@ -104,7 +104,6 @@ def pathfinding(board: dict[Coord, CellState], start:[Node] , ends :[[Coord]]) \
                     new_node.is_jump = True
                     new_node.move = direction
                     add_new_node(action_list, new_node)
-                    # check every direction
                 #if it cannot jump
                 elif valid_landing_spot(board, next_coord):
                     new_node = Node(next_coord, current)
@@ -117,6 +116,7 @@ def pathfinding(board: dict[Coord, CellState], start:[Node] , ends :[[Coord]]) \
                     continue
 
 
+#if it is blue then it is another way around
 def red_directions():
     return [Direction.Down, Direction.DownLeft, Direction.DownRight, Direction.Left, Direction.Right]
 
@@ -132,6 +132,7 @@ def can_jump(board, new_coord, direction):
         if (new_coord + direction) in board and board[new_coord + direction] == CellState.LILY_PAD:
             return True
     return False
+
 #heuristic function
 def h_cost(start : Coord, ends : []) -> int:
     return min(abs(start.r - end.coord.r) + abs(start.c - end.coord.c) for end in ends)
@@ -145,29 +146,29 @@ def valid_landing_spot(board, coord):
         return True
 
 def retrace_path(end_node: Node) -> list[MoveAction]:
+    # Empty list to store the path
     path = []
+    # Traverse the linked list
     cur_node = end_node
-
     while cur_node:
         if cur_node.is_jump:
             # Collect jump moves
             moves = [cur_node.move]
-            print(moves)
             # Move backwards through jump nodes to find the jump start
             while cur_node.parent and cur_node.parent.is_jump:
                 cur_node = cur_node.parent
                 moves.append(cur_node.move)
+            # Collect the node coord
             jump_start_coord = cur_node.parent.coord if cur_node.parent else cur_node.coord
-
             moves.reverse()
             path.append(MoveAction(jump_start_coord, moves))
             cur_node = cur_node.parent
         else:
-            if cur_node.parent:  # Normal single move
+            # Normal single move
+            if cur_node.parent:
                 direction = cur_node.move if cur_node.move else None
                 if direction:
                     path.append(MoveAction(cur_node.parent.coord, [direction]))
             cur_node = cur_node.parent
-
     path.reverse()
     return path
