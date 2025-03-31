@@ -2,7 +2,7 @@
 # Project Part A: Single Player Freckers
 import heapq
 
-from .core import CellState, Coord, Direction, MoveAction
+from .core import CellState, Coord, Direction, MoveAction, BOARD_N
 from .utils import render_board
 
 class Node:
@@ -50,8 +50,8 @@ def search(
             start = coord
 
     ends = []
-    for i in range(8):
-        candidate = Coord(7, i)
+    for i in range(BOARD_N):
+        candidate = Coord(BOARD_N - 1, i)
         if valid_landing_spot(board, candidate):
             ends.append(candidate)
 
@@ -81,7 +81,7 @@ def pathfinding(board: dict[Coord, CellState], start:[Node] , ends :[[Coord]]) \
     #continue exploring until open list is empty
     while len(action_list) > 0:
         # explore the node with the lowest f value
-        current = action_list.pop(0)#get the node with smallest f value
+        current = heapq.heappop(action_list)#get the node with smallest f value
 
         # mark the current node as explored
         closed_list.add(current.coord)
@@ -98,6 +98,7 @@ def pathfinding(board: dict[Coord, CellState], start:[Node] , ends :[[Coord]]) \
             if next_coord not in closed_list: # is not explored
                 #add the next node to the open list
                 if can_jump(board, next_coord, direction): # if it can jump
+                   # print("next node " + str(next_coord))
                     new_node = Node(next_coord + direction, current)
                     new_node.g = current.g
                     new_node.h = h_cost(new_node.coord, end_nodes)
@@ -141,7 +142,6 @@ def h_cost(start : Coord, ends : []) -> int:
 def valid_landing_spot(board, coord):
     #check position is valid
     if coord not in board:
-        print("invalid coord" + str(coord))
         return False
     #check valid pad
     if board[coord] == CellState.LILY_PAD and board[coord] != CellState.RED and board[coord] != CellState.BLUE:
@@ -153,6 +153,7 @@ def retrace_path(end_node: Node) -> list[MoveAction]:
     # Traverse the linked list
     cur_node = end_node
     while cur_node:
+        print("cur_node " + str(cur_node.coord))
         if cur_node.is_jump:
             # Collect jump moves
             moves = [cur_node.move]
