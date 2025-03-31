@@ -64,7 +64,7 @@ def search(
     return None
 
 #a* search
-def pathfinding(board: dict[Coord, CellState], start:[Node] , ends :[[Coord]]) \
+def pathfinding(board: dict[Coord, CellState], start:[Coord] , ends :[[Coord]]) \
         -> list[MoveAction] | None:
     action_list = [] # list of actions and sorted by f value
     closed_list = set()
@@ -89,6 +89,7 @@ def pathfinding(board: dict[Coord, CellState], start:[Node] , ends :[[Coord]]) \
         #check if current is the end
         if current.coord in ends:
             #repack the path to return
+            print("found path" + str(current.coord))
             return retrace_path(current)
 
         # all possible directions
