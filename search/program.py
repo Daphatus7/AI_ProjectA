@@ -82,7 +82,10 @@ def pathfinding(board: dict[Coord, CellState], start:[Coord] , ends :[[Coord]]) 
     while len(action_list) > 0:
         # explore the node with the lowest f value
         current = heapq.heappop(action_list)#get the node with smallest f value
-
+        #copy the board
+        board = board.copy()
+        board[current.coord] = CellState.RED
+        print(render_board(board, ansi=True))
         # mark the current node as explored
         closed_list.add(current.coord)
 
@@ -94,30 +97,33 @@ def pathfinding(board: dict[Coord, CellState], start:[Coord] , ends :[[Coord]]) 
 
         # all possible directions
         for direction in red_directions():
-            next_coord = current.coord + direction
-            #if it can jump
-            if next_coord not in closed_list: # is not explored
-                #add the next node to the open list
-                if can_jump(board, next_coord, direction): # if it can jump
-                   # print("next node " + str(next_coord))
-                    new_node = Node(next_coord + direction, current)
-                    new_node.g = current.g
-                    new_node.h = h_cost(new_node.coord, end_nodes)
-                    new_node.f = new_node.g + new_node.h
-                    #if parent is not jump_start then mark this as jump_start:
-                    new_node.is_jump = True
-                    new_node.move = direction
-                    add_new_node(action_list, new_node)
-                #if it cannot jump check if is a valid landing spot
-                elif valid_landing_spot(board, next_coord):
-                    new_node = Node(next_coord, current)
-                    new_node.g = current.g + 1
-                    new_node.h = h_cost(new_node.coord, end_nodes)
-                    new_node.f = new_node.g + new_node.h
-                    new_node.move = direction
-                    add_new_node(action_list, new_node)
-                else:
-                    continue
+            r_vector, c_vector = current.coord.r + direction.r, current.coord.c + direction.c
+            if is_on_board(r_vector, c_vector):
+                next_coord = Coord(r_vector, c_vector)
+                if next_coord not in closed_list: # is not explored
+                    print("checking node " + str(next_coord))
+                    if can_jump(board, next_coord, direction): # if it can jump
+                        print("can jump " + str(next_coord))
+                        new_node = Node(next_coord + direction, current)
+                        new_node.g = current.g
+                        new_node.h = h_cost(new_node.coord, end_nodes)
+                        new_node.f = new_node.g + new_node.h
+                        #if parent is not jump_start then mark this as jump_start:
+                        new_node.is_jump = True
+                        new_node.move = direction
+                        add_new_node(action_list, new_node)
+                    #if it cannot jump check if is a valid landing spot
+                    elif valid_landing_spot(board, next_coord):
+                        print("can land" + str(next_coord))
+                        new_node = Node(next_coord, current)
+                        new_node.g = current.g + 1
+                        new_node.h = h_cost(new_node.coord, end_nodes)
+                        new_node.f = new_node.g + new_node.h
+                        new_node.move = direction
+                        add_new_node(action_list, new_node)
+                    else:
+                        print("not valid landing spot" + str(next_coord))
+                        continue
 
 
 #if it is blue then it is another way around
@@ -126,10 +132,12 @@ def red_directions():
 
 def add_new_node(action_list, new_node):
     heapq.heappush(action_list, new_node)
+def is_on_board(r,c):
+    return 0 <= r < BOARD_N and 0 <= c < BOARD_N
 
 def can_jump(board, new_coord, direction):
     #check if there is a frog
-    if new_coord not in board:
+    if new_coord not in board or not is_on_board(new_coord.r, new_coord.c):
         return False
     if board[new_coord] == CellState.BLUE:
         if (new_coord + direction) in board and board[new_coord + direction] == CellState.LILY_PAD:
