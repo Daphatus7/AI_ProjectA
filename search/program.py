@@ -16,6 +16,8 @@ class Node:
         self.is_jump = False
     def __eq__(self, other):
         return self.coord == other.coord
+    def __lt__(self, other):
+        return self.f < other.f
 
 def search(
     board: dict[Coord, CellState]
@@ -74,7 +76,7 @@ def pathfinding(board: dict[Coord, CellState], start:[Node] , ends :[[Coord]]) \
     end_nodes = [Node(end,None) for end in ends if valid_landing_spot(board, end)]
 
     #the current node
-    action_list.append(start_node)
+    heapq.heappush(action_list, start_node)
 
     #continue exploring until open list is empty
     while len(action_list) > 0:
@@ -104,7 +106,7 @@ def pathfinding(board: dict[Coord, CellState], start:[Node] , ends :[[Coord]]) \
                     new_node.is_jump = True
                     new_node.move = direction
                     add_new_node(action_list, new_node)
-                #if it cannot jump
+                #if it cannot jump check if is a valid landing spot
                 elif valid_landing_spot(board, next_coord):
                     new_node = Node(next_coord, current)
                     new_node.g = current.g + 1
@@ -121,8 +123,7 @@ def red_directions():
     return [Direction.Down, Direction.DownLeft, Direction.DownRight, Direction.Left, Direction.Right]
 
 def add_new_node(action_list, new_node):
-    action_list.append(new_node)
-    action_list.sort(key=lambda x: x.f)
+    heapq.heappush(action_list, new_node)
 
 def can_jump(board, new_coord, direction):
     #check if there is a frog
@@ -140,6 +141,7 @@ def h_cost(start : Coord, ends : []) -> int:
 def valid_landing_spot(board, coord):
     #check position is valid
     if coord not in board:
+        print("invalid coord" + str(coord))
         return False
     #check valid pad
     if board[coord] == CellState.LILY_PAD and board[coord] != CellState.RED and board[coord] != CellState.BLUE:
