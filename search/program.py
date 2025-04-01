@@ -136,12 +136,21 @@ def is_on_board(r,c):
     return 0 <= r < BOARD_N and 0 <= c < BOARD_N
 
 def can_jump(board, new_coord, direction):
-    #check if there is a frog
-    if new_coord not in board or not is_on_board(new_coord.r, new_coord.c):
+    # Check if the position exists and contains a blue frog
+    if new_coord not in board or board[new_coord] != CellState.BLUE:
         return False
-    if board[new_coord] == CellState.BLUE:
-        if (new_coord + direction) in board and board[new_coord + direction] == CellState.LILY_PAD:
-            return True
+        
+    # Calculate landing spot after jumping
+    landing_r, landing_c = new_coord.r + direction.r, new_coord.c + direction.c
+    
+    # First check if landing is within board boundaries
+    if not is_on_board(landing_r, landing_c):
+        return False
+        
+    landing_coord = Coord(landing_r, landing_c)
+    # Then check if it's a valid lily pad
+    if landing_coord in board and board[landing_coord] == CellState.LILY_PAD:
+        return True
     return False
 
 #heuristic function
